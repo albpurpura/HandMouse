@@ -105,21 +105,17 @@ def recognize_gesture(results):
     wrist_mid_dist = dist_m[0, 12]
     wrist_ring_dist = dist_m[0, 16]
     wrist_pinky_dist = dist_m[0, 20]
-
+    y_coords = np.array([hand_landmarks.landmark[i].y for i in range(len(hand_landmarks.landmark))])
     if check_pointing_action(hand_landmarks, dist_m):
         # move cursor
-        print('move')
         action = 'mouse_move'
     elif thumb_idx_dist <= THR and mid_idx_dist > THR and wrist_ring_dist > WRIST_THR and wrist_mid_dist > WRIST_THR and wrist_pinky_dist > WRIST_THR:
         # left click
         action = 'left_click'
-    elif thumb_idx_dist > THR and base_idx_thumb_dist > THR and mid_thumb_dist <= THR and wrist_ring_dist > WRIST_THR \
-            and wrist_pinky_dist > WRIST_THR:
+    elif check_right_click(hand_landmarks, dist_m):
         # right click
         action = 'right_click'
-    elif thumb_idx_dist > THR and mid_thumb_dist > THR and mid_idx_dist <= THR and base_idx_thumb_dist <= THR \
-            and wrist_pinky_dist <= WRIST_THR and wrist_idx_dist > WRIST_THR \
-            and wrist_mid_dist > WRIST_THR:  # and wrist_ring_dist <= WRIST_THR
+    elif check_scrolling_action(hand_landmarks, dist_m):
         # move cursor
         action = 'scroll'
     else:
@@ -134,6 +130,21 @@ def recognize_gesture(results):
     return action
 
 
+def check_right_click(hand_landmarks, dist_m):
+    y_coords = np.array([hand_landmarks.landmark[i].y for i in range(len(hand_landmarks.landmark))])
+    return y_coords[15] - y_coords[6] < THR and dist_m[4, 12] < THR \
+           and y_coords[15] - y_coords[12] < THR and y_coords[18] - y_coords[12] < THR \
+           and y_coords[19] - y_coords[6] < THR and y_coords[15] - y_coords[6] < THR \
+            and y_coords[12] - y_coords[14] > THR and y_coords[12] - y_coords[19] > THR
+
+
+
+def check_scrolling_action(hand_landmarks, dist_m):
+    y_coords = np.array([hand_landmarks.landmark[i].y for i in range(len(hand_landmarks.landmark))])
+    return y_coords[12] - y_coords[14] < THR and y_coords[16] - y_coords[6] > THR and y_coords[20] - y_coords[6] > THR \
+           and dist_m[4, 5] <= THR and y_coords[8] - y_coords[6] < THR
+
+
 def check_pointing_action(hand_landmarks, dist_m):
     # thumb_idx_dist = dist_m[4, 8]
     # mid_thumb_dist = dist_m[4, 12]
@@ -145,8 +156,8 @@ def check_pointing_action(hand_landmarks, dist_m):
     # wrist_pinky_dist = dist_m[0, 20]
 
     y_coords = np.array([hand_landmarks.landmark[i].y for i in range(len(hand_landmarks.landmark))])
-    if y_coords[12] - y_coords[6] > 0 and y_coords[16] - y_coords[6] > 0 and y_coords[20] - y_coords[6] > 0 \
-            and dist_m[4, 5] <= THR:
+    if y_coords[12] - y_coords[6] > THR and y_coords[16] - y_coords[6] > THR and y_coords[20] - y_coords[6] > THR \
+            and dist_m[4, 5] <= THR and y_coords[8] - y_coords[6] < THR:
         return True
     return False
 
