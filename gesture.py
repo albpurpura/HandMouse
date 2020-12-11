@@ -1,7 +1,7 @@
 import numpy as np
 import pyautogui
 
-THR = 0.08
+THR = 0.1
 WRIST_THR = 0.2
 
 
@@ -102,16 +102,15 @@ def recognize_gesture(results):
     mid_idx_dist = dist_m[8, 12]
     base_idx_thumb_dist = dist_m[4, 5]
     wrist_idx_dist = dist_m[0, 8]
-    writst_mid_dist = dist_m[0, 12]
+    wrist_mid_dist = dist_m[0, 12]
     wrist_ring_dist = dist_m[0, 16]
     wrist_pinky_dist = dist_m[0, 20]
 
-    if thumb_idx_dist > THR and mid_idx_dist > THR and base_idx_thumb_dist <= THR \
-            and wrist_ring_dist <= WRIST_THR and wrist_pinky_dist <= WRIST_THR and wrist_idx_dist > WRIST_THR \
-            and writst_mid_dist <= WRIST_THR:
+    if check_pointing_action(hand_landmarks, dist_m):
         # move cursor
+        print('move')
         action = 'mouse_move'
-    elif thumb_idx_dist <= THR and mid_idx_dist > THR and wrist_ring_dist > WRIST_THR and writst_mid_dist > WRIST_THR and wrist_pinky_dist > WRIST_THR:
+    elif thumb_idx_dist <= THR and mid_idx_dist > THR and wrist_ring_dist > WRIST_THR and wrist_mid_dist > WRIST_THR and wrist_pinky_dist > WRIST_THR:
         # left click
         action = 'left_click'
     elif thumb_idx_dist > THR and base_idx_thumb_dist > THR and mid_thumb_dist <= THR and wrist_ring_dist > WRIST_THR \
@@ -120,14 +119,36 @@ def recognize_gesture(results):
         action = 'right_click'
     elif thumb_idx_dist > THR and mid_thumb_dist > THR and mid_idx_dist <= THR and base_idx_thumb_dist <= THR \
             and wrist_pinky_dist <= WRIST_THR and wrist_idx_dist > WRIST_THR \
-            and writst_mid_dist > WRIST_THR: # and wrist_ring_dist <= WRIST_THR
+            and wrist_mid_dist > WRIST_THR:  # and wrist_ring_dist <= WRIST_THR
         # move cursor
         action = 'scroll'
     else:
         # print(str(dist_m))
+        # print(
+        #     'thumb_idx_dist={}\tmid_idx_dist={}\tbase_idx_thumb_dist={}\twrist_ring_dist={}\twrist_pinky_dist={}\twrist_idx_dist={}\twrist_mid_dist={}\tmid_thumb_dist={}'.format(
+        #         thumb_idx_dist, mid_idx_dist, base_idx_thumb_dist, wrist_ring_dist, wrist_pinky_dist, wrist_idx_dist,
+        #         wrist_mid_dist, mid_thumb_dist))
         action = None
+        check_pointing_action(hand_landmarks, dist_m)
 
     return action
+
+
+def check_pointing_action(hand_landmarks, dist_m):
+    # thumb_idx_dist = dist_m[4, 8]
+    # mid_thumb_dist = dist_m[4, 12]
+    # mid_idx_dist = dist_m[8, 12]
+    # base_idx_thumb_dist = dist_m[4, 5]
+    # wrist_idx_dist = dist_m[0, 8]
+    # wrist_mid_dist = dist_m[0, 12]
+    # wrist_ring_dist = dist_m[0, 16]
+    # wrist_pinky_dist = dist_m[0, 20]
+
+    y_coords = np.array([hand_landmarks.landmark[i].y for i in range(len(hand_landmarks.landmark))])
+    if y_coords[12] - y_coords[6] > 0 and y_coords[16] - y_coords[6] > 0 and y_coords[20] - y_coords[6] > 0 \
+            and dist_m[4, 5] <= THR:
+        return True
+    return False
 
 
 def compute_distance(x1, y1, x2, y2):
