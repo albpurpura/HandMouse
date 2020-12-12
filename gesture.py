@@ -142,7 +142,7 @@ def check_right_click(hand_landmarks, dist_m):
 def check_scrolling_action(hand_landmarks, dist_m):
     y_coords = np.array([hand_landmarks.landmark[i].y for i in range(len(hand_landmarks.landmark))])
     return y_coords[12] - y_coords[14] < THR and y_coords[16] - y_coords[6] > THR and y_coords[20] - y_coords[6] > THR \
-           and dist_m[4, 5] <= THR and y_coords[8] - y_coords[6] < THR
+           and dist_m[4, 5] <= THR and y_coords[8] - y_coords[6] < THR and y_coords[12] - y_coords[6] < THR
 
 
 def check_pointing_action(hand_landmarks, dist_m):
