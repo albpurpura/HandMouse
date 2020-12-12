@@ -51,7 +51,7 @@ def scroll(results, prev_results):
     diff = curr_y_coords - prev_y_coords
     # print(diff)
     if np.absolute(diff) >= 0.01:
-        pyautogui.scroll(2 * -np.sign(diff))
+        pyautogui.scroll(100 * diff)
         print('scrolled')
 
 
