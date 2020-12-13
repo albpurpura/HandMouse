@@ -1,5 +1,6 @@
 import cv2
 import mediapipe as mp
+import numpy as np
 
 from gesture import recognize_gesture, mouse_move, scroll, right_click, left_click
 
@@ -7,8 +8,8 @@ mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
+
 prev_res = None
-background = None
 cap = cv2.VideoCapture(0)
 
 while cap.isOpened():
@@ -23,9 +24,6 @@ while cap.isOpened():
     # Flip the image horizontally for a later selfie-view display, and convert
     # the BGR image to RGB.
     image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
-    # if background is None:
-    #     background = image
-    # image = image - background
     image_height, image_width, _ = image.shape
     # To improve performance, optionally mark the image as not writeable to
     # pass by reference.

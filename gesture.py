@@ -5,11 +5,16 @@ THR = 0.1
 WRIST_THR = 0.2
 
 
-def get_last_valid_reading(prev_results):
+def get_last_k_valid_reading(prev_results, k):
+    valid_readings = []
     for i in range(1, len(prev_results)):
         prev_landmarks = get_hand_landmarks(prev_results[-i])
         if prev_landmarks is not None:
-            return prev_landmarks
+            valid_readings.append(prev_landmarks)
+            if len(valid_readings) == k:
+                return valid_readings
+            # return prev_landmarks
+    return valid_readings
 
 
 def left_click():
@@ -24,7 +29,9 @@ def right_click():
 
 def mouse_move(results, prev_results, image_height, image_width):
     curr_landmarks = get_hand_landmarks(results)
-    prev_landmarks = get_last_valid_reading(prev_results)
+    prev_landmarks = get_last_k_valid_reading(prev_results, 5)[0]
+    second_prev_landmarks = get_last_k_valid_reading(prev_results, 5)[-1]
+
 
     if curr_landmarks is None or prev_landmarks is None:
         return
@@ -34,9 +41,15 @@ def mouse_move(results, prev_results, image_height, image_width):
     prev_x_coords = np.array([prev_landmarks.landmark[i].x for i in range(len(prev_landmarks.landmark))])[8]
     prev_y_coords = np.array([prev_landmarks.landmark[i].y for i in range(len(prev_landmarks.landmark))])[8]
     diff = (curr_x_coords - prev_x_coords, curr_y_coords - prev_y_coords)
-    # print(diff)
-    pyautogui.moveRel(int(diff[0] * image_width * 3), int(diff[1] * image_height * 3), duration=0.1)
-    print('mouse moved')
+
+    sec_prev_x_coords = np.array([second_prev_landmarks.landmark[i].x for i in range(len(second_prev_landmarks.landmark))])[8]
+    sec_prev_y_coords = np.array([second_prev_landmarks.landmark[i].y for i in range(len(second_prev_landmarks.landmark))])[8]
+
+    control_diff = (curr_x_coords - sec_prev_x_coords, curr_y_coords - sec_prev_y_coords)
+    print(control_diff)
+    if np.absolute(control_diff[0]) >= 0.003 or np.absolute(control_diff[1]) >= 0.003:
+        pyautogui.moveRel(int(diff[0] * image_width * 3), int(diff[1] * image_height * 3), duration=0.1)
+        print('mouse moved')
 
 
 def scroll(results, prev_results):
@@ -135,8 +148,7 @@ def check_right_click(hand_landmarks, dist_m):
     return y_coords[15] - y_coords[6] < THR and dist_m[4, 12] < THR \
            and y_coords[15] - y_coords[12] < THR and y_coords[18] - y_coords[12] < THR \
            and y_coords[19] - y_coords[6] < THR and y_coords[15] - y_coords[6] < THR \
-            and y_coords[12] - y_coords[14] > THR and y_coords[12] - y_coords[19] > THR
-
+           and y_coords[12] - y_coords[14] > THR and y_coords[12] - y_coords[19] > THR
 
 
 def check_scrolling_action(hand_landmarks, dist_m):
