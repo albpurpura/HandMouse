@@ -46,7 +46,7 @@ def mouse_move(results, prev_results, image_height, image_width):
     sec_prev_y_coords = np.array([second_prev_landmarks.landmark[i].y for i in range(len(second_prev_landmarks.landmark))])[8]
 
     control_diff = (curr_x_coords - sec_prev_x_coords, curr_y_coords - sec_prev_y_coords)
-    print(control_diff)
+    # print(control_diff)
     if np.absolute(control_diff[0]) >= 0.003 or np.absolute(control_diff[1]) >= 0.003:
         pyautogui.moveRel(int(diff[0] * image_width * 3), int(diff[1] * image_height * 3), duration=0.1)
         print('mouse moved')
